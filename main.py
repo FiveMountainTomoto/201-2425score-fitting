@@ -27,16 +27,62 @@ def get_fitting_parm(poi_data, n):
     return parm, ia.sigma
 
 
-def plot(a, b, poi_data):
+def plot_poi(poi_data):
     # 绘制数据点
     x_data = poi_data[:, 0]
     y_data = poi_data[:, 1]
     plt.scatter(x_data, y_data, color='blue', label='Data Points')
 
-    # 绘制直线
-    x_line = np.linspace(50, 100, 100)  # 横坐标范围从 50 到 100
-    y_line = a * x_line + b  # 线性方程 y = a * x + b
-    plt.plot(x_line, y_line, color='red', label=f'y = {a:.2f}x + {b:.2f}')
+
+# 这个函数让KIMI写的，脏活给AI干，爽
+def plot_curve(parm):
+    """
+    使用多项式系数绘制曲线
+    :param parm: 多项式系数（按顺序为0,1,2...次系数）
+    """
+    # 横坐标范围
+    x_line = np.linspace(40, 100, 100)
+
+    # 多项式函数
+    # y = c0 + c1*x + c2*x^2 + ... + cn*x^n
+    # parm 是 [c0, c1, c2, ..., cn]
+    # 因为 np.polyval 的输入是高次幂在前，低次幂在后，所以需要反转 parm
+    poly = np.polyval(parm[::-1], x_line)
+
+    # 动态生成方程字符串
+    equation_parts = []
+    for i, coeff in enumerate(parm):
+        # 忽略系数为0的项
+        if np.isclose(coeff, 0):
+            continue
+        # 指数部分
+        power = i
+        # 符号
+        if coeff > 0:
+            symbol = '+' if equation_parts else ''
+        else:
+            symbol = '-'
+            coeff = abs(coeff)
+        # 构建项
+        if power == 0:
+            part = f"{coeff:.2f}"
+        elif power == 1:
+            part = f"{coeff:.2f}x"
+        else:
+            part = f"{coeff:.2f}x^{power}"
+        # 添加到方程字符串
+        if symbol:
+            equation_parts.append(f"{symbol} {part}")
+        else:
+            equation_parts.append(f"{part}")
+    # 整合成方程字符串
+    equation = "y = " + ' '.join(equation_parts)
+
+    # 绘制曲线
+    plt.plot(x_line, poly, color='red', label=equation)
+
+
+# 按间距中的绿色按钮以运行脚本。
     plt.xlabel('2024')
     plt.ylabel('2025')
     plt.legend()
