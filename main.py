@@ -4,30 +4,27 @@ from data import data
 from indirect_adjustment import IndirectAdjustment
 
 
-def get_fitting_parm(poi_data):
+def get_fitting_parm(poi_data, n):
     """
+    :param n: 拟合曲线参数个数（曲线次数）
     :param poi_data: 数据
     :return: 斜率平差值，截距平差值，中误差
     """
-    # 用前两组数据计算参数近似值
-    A = poi_data[:2].copy()
-    A[:, 1] = 1
-    b = poi_data[:2, 1]
-    x0 = np.linalg.solve(A, b)
-    a0 = x0[0]  # 斜率近似值
-    b0 = x0[1]  # 截距近似值
+    # 用前 n 组数据计算 n 个参数的近似值
+    x = poi_data[:, 0]
+    y0 = poi_data[:, 1]
+    B0 = np.vander(x[:n], N=n, increasing=True)  # 使用 x 的前 n 个元素生成 N=n 列的矩阵
+    parm0 = np.linalg.solve(B0, y0[:n])  # 参数近似值
 
     # 构造误差方程
-    B = poi_data.copy()
-    B[:, 1] = 1
-    P = np.eye(B.shape[0])  # 认为数据等权，权阵为单位阵
-    l = poi_data[:, 1] - poi_data[:, 0] * a0 - b0
+    B = np.vander(x, N=n, increasing=True)  # 误差方程系数矩阵
+    P = np.diag(poi_data[:, 2])  # 权阵
+    l = y0 - B @ parm0
 
     # 间接平差法计算改正数
     ia = IndirectAdjustment(B, P, l)
-    a = a0 + ia.x[0]
-    b = b0 + ia.x[1]
-    return a, b, ia.sigma
+    parm = parm0 + ia.x
+    return parm, ia.sigma
 
 
 def plot(a, b, poi_data):
@@ -49,6 +46,8 @@ def plot(a, b, poi_data):
 
 # 按间距中的绿色按钮以运行脚本。
 if __name__ == '__main__':
-    a, b, sigma = get_fitting_parm(data)
-    print(f"中误差：{sigma}")
-    plot(a, b, data)
+    for i in range(2,10):
+        parm, sigma = get_fitting_parm(data, i)
+        print(sigma)
+    # print(f"中误差：{sigma}")
+    # plot(a, b, data)
