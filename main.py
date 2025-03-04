@@ -83,17 +83,20 @@ def plot_curve(parm):
 
 
 # 按间距中的绿色按钮以运行脚本。
+if __name__ == '__main__':
+    # for i in range(2, 6):
+    #     parm, sigma = get_fitting_parm(data, i)
+    #     print(f"中误差：{sigma}")
+    #     plot_curve(parm)
+    parm, sigma = get_fitting_parm(data, 5)
+    print(f"中误差：{sigma}")
+    plot_curve(parm)
+    plot_poi(data)
+
     plt.xlabel('2024')
     plt.ylabel('2025')
     plt.legend()
     plt.grid(True)
+
+    plt.savefig('curve_plot.jpg', format='jpg', dpi=300)  # 保存拟合图片到当前文件夹
     plt.show()
-
-
-# 按间距中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    for i in range(2,10):
-        parm, sigma = get_fitting_parm(data, i)
-        print(sigma)
-    # print(f"中误差：{sigma}")
-    # plot(a, b, data)
